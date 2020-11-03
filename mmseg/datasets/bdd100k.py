@@ -21,4 +21,4 @@ class Bdd100kDataset(CustomDataset):
     def __init__(self, split, **kwargs):
         super(Bdd100kDataset, self).__init__(
             img_suffix='.jpg', seg_map_suffix='.png', split=split, **kwargs)
-        assert osp.exists(self.img_dir) and self.split is not None
+        assert osp.exists(self.img_dir)
