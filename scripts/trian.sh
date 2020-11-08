@@ -1,2 +1,2 @@
-export CUDA_VISIBLE_DEVICES=0,1,2,3
-PORT=29502 ./tools/dist_train.sh configs/danet/danet_r50-d8_769x769_40k_bdd100k.py 4 --work-dir out/danet_r50-d8_769x769_40k
+export CUDA_VISIBLE_DEVICES=5,6,7,8
+PORT=29502 ./tools/dist_train.sh configs/emanet/emanet_r50-d8_769x769_80k_bdd100k.py 4 --work-dir out/emanet_r50-d8_769x769_80k
