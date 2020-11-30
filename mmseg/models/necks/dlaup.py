@@ -153,14 +153,14 @@ class DLAUp(nn.Module):
         layers = list(layers)
         layers = layers[6 - len(self.channels):]
         assert len(layers) > 1
-        ms_feat = [layers[-1]]
+        # ms_feat = [layers[-1]]
         for i in range(len(layers) - 1):
             ida = getattr(self, 'ida_{}'.format(i))
             x, y = ida(layers[-i - 2:])  # y : aggregation nodes
             layers[-i - 1:] = y
-            ms_feat.append(x)
-        ms_feat = ms_feat[::-1]
-        ms_feat[-1] = self.last_conv(ms_feat[-1])
-        if self.num_outs > len(ms_feat):
-            ms_feat.append(F.max_pool2d(ms_feat[-1], 1, stride=2))
-        return ms_feat  # x
+            # ms_feat.append(x)
+        # ms_feat = ms_feat[::-1]
+        # ms_feat[-1] = self.last_conv(ms_feat[-1])
+        # if self.num_outs > len(ms_feat):
+            # ms_feat.append(F.max_pool2d(ms_feat[-1], 1, stride=2))
+        return x  # x

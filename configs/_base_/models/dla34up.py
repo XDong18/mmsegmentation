@@ -16,15 +16,15 @@ model = dict(
         scales=(1, 2, 4, 8, 16),
         num_outs=5),
     decode_head=dict(
-            type='MultiLabelFCNMaskHead',
-            num_convs=4,
+            type='DLAsHead',
+            channels = [16, 32, 64, 128, 256, 512],
             in_channels=256,
-            conv_out_channels=256,
             num_classes=19,
-            name='sem_seg',
-            loss_mask=dict(
-                type='CrossEntropyLoss'),
-            upsample_method='bilinear')
+            loss_decode=dict(
+                     type='CrossEntropyLoss',
+                     use_sigmoid=False,
+                     loss_weight=1.0),
+            )
     )
 # model training and testing settings
 train_cfg = dict()
