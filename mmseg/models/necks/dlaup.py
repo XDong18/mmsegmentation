@@ -4,7 +4,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from ..builder import NECKS
-from ..utils import ConvModule
+from ..model_utils import ConvModule
 from mmcv.cnn import xavier_init
 
 
