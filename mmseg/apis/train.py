@@ -74,6 +74,8 @@ def train_segmentor(model,
     #TODO replace iteration based runner with epoch based runner
     # if cfg.get('runner') is None:
     #     cfg.runner = {'type': 'IterBasedRunner', 'max_iters': cfg.total_iters}
+    if cfg.get('runner') is None:
+        cfg.runner = {'type': 'EpochBasedRunner'}
     #     warnings.warn(
     #         'config is now expected to have a `runner` section, '
     #         'please set `runner` in your config.', UserWarning)
@@ -121,4 +123,4 @@ def train_segmentor(model,
         runner.resume(cfg.resume_from)
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
-    runner.run(data_loaders, cfg.workflow)
+    runner.run(data_loaders, cfg.workflow, cfg.total_epochs)
