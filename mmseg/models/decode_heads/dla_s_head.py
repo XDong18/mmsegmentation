@@ -6,6 +6,7 @@ from mmseg.ops import resize
 from ..builder import HEADS
 from .decode_head import BaseDecodeHead
 import math
+from mmcv.cnn import normal_init
 
 def fill_up_weights(up):
     w = up.weight.data
@@ -45,13 +46,7 @@ class DLAsHead(BaseDecodeHead):
     def init_weights(self):
         fill_up_weights(self.up)
         self.up.weight.requires_grad = False
-        for m in self.conv_cfg.modules():
-            if isinstance(m, nn.Conv2d):
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
-            elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
+        normal_init(self.conv_seg, mean=0, std=0.01)
 
 
     def forward(self, inputs):
