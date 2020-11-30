@@ -23,7 +23,7 @@ model = dict(
             num_classes=19,
             name='sem_seg',
             loss_mask=dict(
-                type='CrossEntropyLoss', ignore_index=255),
+                type='CrossEntropyLoss'),
             upsample_method='bilinear')
     )
 # model training and testing settings

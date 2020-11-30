@@ -30,6 +30,7 @@ class MultiLabelFCNMaskHead(nn.Module):
                  norm_cfg=None,
                  fg_weight=1,
                  name='',
+                 ignore_index=255,
                  loss_mask=dict(
                      type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)):
         super(MultiLabelFCNMaskHead, self).__init__()
@@ -52,6 +53,7 @@ class MultiLabelFCNMaskHead(nn.Module):
         self.loss_mask = build_loss(loss_mask)
         self.name = name
         self.fg_weight = fg_weight
+        self.ignore_index = ignore_index
 
         self.convs = nn.ModuleList()
         for i in range(self.num_convs):
@@ -130,6 +132,6 @@ class MultiLabelFCNMaskHead(nn.Module):
             weights = None
             if self.fg_weight > 1:
                 weights = torch.FloatTensor([1] + [self.fg_weight] * (c - 1)).to(p.device)
-            loss_mask = self.loss_mask(p, t, class_weight=weights)
+            loss_mask = self.loss_mask(p, t, class_weight=weights, ignore_index=self.ignore_index)
             loss['loss_{}'.format(self.name)] = loss_mask
         return loss
