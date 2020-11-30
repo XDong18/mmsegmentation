@@ -6,8 +6,8 @@ import torch.nn as nn
 
 from ..builder import build_loss
 from ..builder import HEADS
-from ..utils import ConvModule
-from mmdet.core import mask_target
+from ..model_utils import ConvModule
+from mmseg.core import mask_target
 
 # replace mmdet.core with mmcv.runner
 from mmcv.runner import auto_fp16, force_fp32
