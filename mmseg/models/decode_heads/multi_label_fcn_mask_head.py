@@ -31,6 +31,7 @@ class MultiLabelFCNMaskHead(nn.Module):
                  fg_weight=1,
                  name='',
                  ignore_index=255,
+                 align_corners=False,
                  loss_mask=dict(
                      type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)):
         super(MultiLabelFCNMaskHead, self).__init__()
@@ -53,7 +54,9 @@ class MultiLabelFCNMaskHead(nn.Module):
         self.loss_mask = build_loss(loss_mask)
         self.name = name
         self.fg_weight = fg_weight
+        # add new features
         self.ignore_index = ignore_index
+        self.align_corners = align_corners
 
         self.convs = nn.ModuleList()
         for i in range(self.num_convs):
