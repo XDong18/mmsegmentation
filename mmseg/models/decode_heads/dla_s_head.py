@@ -24,10 +24,10 @@ class DLAsHead(BaseDecodeHead):
         self.channels = channels
         self.first_level = 1
         super(DLAsHead, self).__init__(channels=channels, **kwargs)
-        self.fc = nn.Sequential(
-            nn.Conv2d(self.channels, self.num_classes, kernel_size=1,
-                      stride=1, padding=0, bias=True)
-        )
+        # self.fc = nn.Sequential(
+        #     nn.Conv2d(self.channels, self.num_classes, kernel_size=1,
+        #               stride=1, padding=0, bias=True)
+        # )
 
         up_factor = 2 ** self.first_level
         if up_factor > 1:
@@ -45,7 +45,7 @@ class DLAsHead(BaseDecodeHead):
     def init_weights(self):
         fill_up_weights(self.up)
         self.up.weight.requires_grad = False
-        for m in self.fc.modules():
+        for m in self.conv_cfg.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
                 m.weight.data.normal_(0, math.sqrt(2. / n))
@@ -55,6 +55,6 @@ class DLAsHead(BaseDecodeHead):
 
 
     def forward(self, inputs):
-        x = self.fc(inputs)
+        x = self.cls_seg(inputs)
         y = self.up(x)
         return y
