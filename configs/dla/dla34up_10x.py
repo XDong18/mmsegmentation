@@ -1,5 +1,5 @@
 _base_ = [
-    'configs/_base_/models/dla34up.py',
+    '../_base_/models/dla34up.py',
     '../_base_/datasets/bdd100k.py',
 ]
 
