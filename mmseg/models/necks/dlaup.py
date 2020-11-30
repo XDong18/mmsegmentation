@@ -151,6 +151,7 @@ class DLAUp(nn.Module):
 
     def forward(self, layers):
         layers = list(layers)
+        layers = layers[6 - len(self.channels):]
         assert len(layers) > 1
         ms_feat = [layers[-1]]
         for i in range(len(layers) - 1):
