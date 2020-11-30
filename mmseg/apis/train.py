@@ -4,7 +4,7 @@ import warnings
 import numpy as np
 import torch
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import build_optimizer, build_runner
+from mmcv.runner import build_optimizer, build_runner, EpochBasedRunner
 
 from mmseg.core import DistEvalHook, EvalHook
 from mmseg.datasets import build_dataloader, build_dataset
@@ -71,21 +71,28 @@ def train_segmentor(model,
     # build runner
     optimizer = build_optimizer(model, cfg.optimizer)
 
-    if cfg.get('runner') is None:
-        cfg.runner = {'type': 'IterBasedRunner', 'max_iters': cfg.total_iters}
-        warnings.warn(
-            'config is now expected to have a `runner` section, '
-            'please set `runner` in your config.', UserWarning)
+    #TODO replace iteration based runner with epoch based runner
+    # if cfg.get('runner') is None:
+    #     cfg.runner = {'type': 'IterBasedRunner', 'max_iters': cfg.total_iters}
+    #     warnings.warn(
+    #         'config is now expected to have a `runner` section, '
+    #         'please set `runner` in your config.', UserWarning)
 
-    runner = build_runner(
-        cfg.runner,
-        default_args=dict(
-            model=model,
-            batch_processor=None,
-            optimizer=optimizer,
-            work_dir=cfg.work_dir,
-            logger=logger,
-            meta=meta))
+    # runner = build_runner(
+    #     cfg.runner,
+    #     default_args=dict(
+    #         model=model,
+    #         batch_processor=None,
+    #         optimizer=optimizer,
+    #         work_dir=cfg.work_dir,
+    #         logger=logger,
+    #         meta=meta))
+    runner = EpochBasedRunner(
+        model,
+        optimizer=optimizer,
+        work_dir=cfg.work_dir,
+        logger=logger,
+        meta=meta)
 
     # register hooks
     runner.register_training_hooks(cfg.lr_config, cfg.optimizer_config,
