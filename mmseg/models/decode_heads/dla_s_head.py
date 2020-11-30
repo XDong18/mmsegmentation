@@ -23,9 +23,9 @@ class DLAsHead(BaseDecodeHead):
     def __init__(self, channels, **kwargs):
         self.channels = channels
         self.first_level = 1
-        super(DLAsHead, self).__init__(channels=channels[self.first_level], **kwargs)
+        super(DLAsHead, self).__init__(channels=channels, **kwargs)
         self.fc = nn.Sequential(
-            nn.Conv2d(self.channels[self.first_level], self.num_classes, kernel_size=1,
+            nn.Conv2d(self.channels, self.num_classes, kernel_size=1,
                       stride=1, padding=0, bias=True)
         )
 
