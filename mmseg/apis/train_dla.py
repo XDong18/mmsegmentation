@@ -4,7 +4,7 @@ import warnings
 import numpy as np
 import torch
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import build_optimizer, build_runner
+from mmcv.runner import build_optimizer, build_runner, EpochBasedRunner, Runner
 
 from mmseg.core import DistEvalHook, EvalHook
 from mmseg.datasets import build_dataloader, build_dataset
@@ -13,6 +13,7 @@ from mmseg.utils import get_root_logger
 
 def set_random_seed(seed, deterministic=False):
     """Set random seed.
+
     Args:
         seed (int): Seed to be used.
         deterministic (bool): Whether to set the deterministic option for
@@ -62,7 +63,7 @@ def train_segmentor(model,
             model.cuda(),
             device_ids=[torch.cuda.current_device()],
             broadcast_buffers=False,
-            find_unused_parameters=find_unused_parameters)
+            find_unused_parameters=True) # TODO change 
     else:
         model = MMDataParallel(
             model.cuda(cfg.gpu_ids[0]), device_ids=cfg.gpu_ids)
@@ -70,22 +71,32 @@ def train_segmentor(model,
     # build runner
     optimizer = build_optimizer(model, cfg.optimizer)
 
+    #TODO replace iteration based runner with epoch based runner
+    # if cfg.get('runner') is None:
+    #     cfg.runner = {'type': 'IterBasedRunner', 'max_iters': cfg.total_iters}
     if cfg.get('runner') is None:
-        cfg.runner = {'type': 'IterBasedRunner', 'max_iters': cfg.total_iters}
-        warnings.warn(
-            'config is now expected to have a `runner` section, '
-            'please set `runner` in your config.', UserWarning)
+        cfg.runner = {'type': 'EpochBasedRunner'}
+    #     warnings.warn(
+    #         'config is now expected to have a `runner` section, '
+    #         'please set `runner` in your config.', UserWarning)
 
-    runner = build_runner(
-        cfg.runner,
-        default_args=dict(
-            model=model,
-            batch_processor=None,
-            optimizer=optimizer,
-            work_dir=cfg.work_dir,
-            logger=logger,
-            meta=meta))
-
+    # runner = build_runner(
+    #     cfg.runner,
+    #     default_args=dict(
+    #         model=model,
+    #         batch_processor=None,
+    #         optimizer=optimizer,
+    #         work_dir=cfg.work_dir,
+    #         logger=logger,
+    #         meta=meta))
+    runner = EpochBasedRunner(
+        model,
+        optimizer=optimizer,
+        work_dir=cfg.work_dir,
+        logger=logger,
+        meta=meta)
+    # runner = Runner(model, bp, optimizer, cfg.work_dir,
+    #                    cfg.log_level)
     # register hooks
     runner.register_training_hooks(cfg.lr_config, cfg.optimizer_config,
                                    cfg.checkpoint_config, cfg.log_config,
@@ -112,4 +123,4 @@ def train_segmentor(model,
         runner.resume(cfg.resume_from)
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
-    runner.run(data_loaders, cfg.workflow)
+    runner.run(data_loaders, cfg.workflow, cfg.total_epochs)
