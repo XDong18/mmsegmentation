@@ -1,0 +1,2 @@
+export CUDA_VISIBLE_DEVICES=8,9
+python tools/test.py configs/deeplabv3plus/deeplabv3plus_r50-d8_769x769_40k_bdd100k.py /shared/xudongliu/code/f_server/mmsegmentation/out/deeplabv3plus_r50-d8_769x769_40k/latest.pth --eval mIoU --show-dir show/deeplabv3plus_r50-d8_769x769_40k
