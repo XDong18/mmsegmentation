@@ -2,7 +2,7 @@ import os
 
 img_dir = 'show/deeplabv3plus_r50-d8_769x769_40k'
 img_list = sorted(os.listdir(img_dir))
-out_fn = 'show/deeplabv3plus_r50-d8_769x769_40k_val'
+out_fn = 'show/deeplabv3plus_r50-d8_769x769_40k_val.html'
 with open (out_fn, 'w') as f:
     f.write('<html>\n')
     f.write('<body>\n')
