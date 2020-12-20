@@ -3,6 +3,8 @@ _base_ = [
     '../_base_/default_runtime.py', '../_base_/schedules/schedule_40k.py'
 ]
 model = dict(
+    backbone=dict(
+        type='ResNet'),
     pretrained='torchvision://resnet50',
     decode_head=dict(align_corners=True),
     auxiliary_head=dict(align_corners=True))
