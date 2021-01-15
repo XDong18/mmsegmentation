@@ -660,9 +660,10 @@ class RandomJitter(object):
             return results
         order = np.random.permutation(range(len(self.jitter_funcs)))
         img = results['img']
+        img = Image.fromarray(img)
         for i in range(len(order)):
             img = self.jitter_funcs[order[i]](img)[0]
-        results['img'] = img
+        results['img'] = np.array(img)
         return results
     
     def __repr__(self):
