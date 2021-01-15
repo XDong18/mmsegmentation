@@ -16,8 +16,8 @@ model = dict(
         ),
     decode_head=dict(
             type='DLAsHead',
-            channels=1024,
-            in_channels=1024,
+            channels=32,
+            in_channels=32,
             num_classes=19,
             dropout_ratio=0,
             loss_decode=dict(
