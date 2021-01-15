@@ -11,7 +11,7 @@ model = dict(
         return_levels=True),
     neck=dict(
         type='DLAUp',
-        channels=[32, 64, 128, 256, 512],
+        channels=[32, 128, 256, 512, 1024],
         scales=(1, 2, 4, 8, 16)
         ),
     decode_head=dict(
