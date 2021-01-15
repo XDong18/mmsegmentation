@@ -23,6 +23,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
+        img_scale=(1280, 720),
         flip=False,
         transforms=[
             dict(type='RandomCrop', crop_size=crop_size),
