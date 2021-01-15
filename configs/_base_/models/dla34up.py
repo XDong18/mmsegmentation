@@ -2,7 +2,7 @@
 norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
 model = dict(
     type='EncoderDecoder',
-    pretrained='/shared/xudongliu/code/models/dla34-24a49e58.pth',
+    pretrained='/shared/xudongliu/models/dla34-24a49e58.pth',
     backbone=dict(
         type='DLA',
         levels=[1, 1, 1, 2, 2, 1],
