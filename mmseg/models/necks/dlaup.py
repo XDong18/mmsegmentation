@@ -111,14 +111,10 @@ class IDAUp(nn.Module):
 
 @NECKS.register_module
 class DLAUp(nn.Module):
-
     def __init__(self,
                  channels,
-                 scales=(1, 2, 4, 8),
+                 scales=(1, 2, 4, 8), # (1,2,4,8,16)
                  in_channels=None,
-                 num_outs=4,
-                 conv_cfg=None,
-                 norm_cfg=None,
                  activation='relu'):
         super(DLAUp, self).__init__()
         if in_channels is None:
@@ -126,14 +122,6 @@ class DLAUp(nn.Module):
         self.channels = channels
         channels = list(channels)
         scales = np.array(scales, dtype=int)
-        self.last_conv = ConvModule(
-            in_channels[-1],
-            channels[-1],
-            1,
-            conv_cfg=conv_cfg,
-            norm_cfg=norm_cfg,
-            activation=activation)
-        self.num_outs = num_outs
         for i in range(len(channels) - 1):
             j = -i - 2
             setattr(
@@ -151,7 +139,7 @@ class DLAUp(nn.Module):
 
     def forward(self, layers):
         layers = list(layers)
-        layers = layers[6 - len(self.channels):]
+        layers = layers[6 - len(self.channels):] 
         assert len(layers) > 1
         # ms_feat = [layers[-1]]
         for i in range(len(layers) - 1):

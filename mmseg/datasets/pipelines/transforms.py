@@ -1,6 +1,7 @@
 import mmcv
 import numpy as np
 from numpy import random
+from PIL import Image, ImageOps, ImageEnhance
 
 from ..builder import PIPELINES
 
@@ -611,3 +612,60 @@ class PhotoMetricDistortion(object):
                      f'{self.saturation_upper}), '
                      f'hue_delta={self.hue_delta})')
         return repr_str
+
+
+class RandomBrightness(object):
+    def __init__(self, var=0.4):
+        self.var = var
+
+    def __call__(self, image, *args):
+        alpha = 1.0 + np.random.uniform(-self.var, self.var)
+        image = ImageEnhance.Brightness(image).enhance(alpha)
+        return (image, *args)
+
+class RandomContrast(object):
+    def __init__(self, var=0.4):
+        self.var = var
+
+    def __call__(self, image, *args):
+        alpha = 1.0 + np.random.uniform(-self.var, self.var)
+        image = ImageEnhance.Contrast(image).enhance(alpha)
+        return (image, *args)
+
+class RandomSharpness(object):
+    def __init__(self, var=0.4):
+        self.var = var
+
+    def __call__(self, image, *args):
+        alpha = 1.0 + np.random.uniform(-self.var, self.var)
+        image = ImageEnhance.Sharpness(image).enhance(alpha)
+        return (image, *args)
+
+@PIPELINES.register_module()
+class RandomJitter(object):
+    def __init__(self, brightness=0.4, contrast=0.4, sharpness=0.4):
+        self.brightness = brightness
+        self.contrast = contrast
+        self.sharpness = sharpness
+        self.jitter_funcs = []
+        if brightness > 0:
+            self.jitter_funcs.append(RandomBrightness(brightness))
+        if contrast > 0:
+            self.jitter_funcs.append(RandomContrast(contrast))
+        if sharpness > 0:
+            self.jitter_funcs.append(RandomSharpness(sharpness))
+
+    def __call__(self, results):
+        if len(self.jitter_funcs) == 0:
+            return results
+        order = np.random.permutation(range(len(self.jitter_funcs)))
+        img = results['img']
+        for i in range(len(order)):
+            img = self.jitter_funcs[order[i]](img)[0]
+        results['img'] = img
+        return results
+    
+    def __repr__(self):
+        return self.__class__.__name__ + f'(brightness={self.brightness})' + \
+                                        f'(contrast={self.contrast})' + \
+                                        f'(sharpness={self.sharpness})'

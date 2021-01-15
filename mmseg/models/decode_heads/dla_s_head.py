@@ -7,6 +7,7 @@ from ..builder import HEADS
 from .decode_head import BaseDecodeHead
 import math
 from mmcv.cnn import normal_init
+from mmcv.runner import auto_fp16, force_fp32
 
 def fill_up_weights(up):
     w = up.weight.data
@@ -46,10 +47,12 @@ class DLAsHead(BaseDecodeHead):
     def init_weights(self):
         fill_up_weights(self.up)
         self.up.weight.requires_grad = False
-        normal_init(self.conv_seg, mean=0, std=0.01)
+        n = self.conv_seg.kernel_size[0] * self.conv_seg.kernel_size[1] * self.conv_seg.out_channels
+        self.conv_seg.weight.data.normal_(0, math.sqrt(2. / n))
 
 
     def forward(self, inputs):
         x = self.cls_seg(inputs)
         y = self.up(x)
+        # y = self.softmax(y)
         return y
