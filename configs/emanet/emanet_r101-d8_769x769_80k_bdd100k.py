@@ -8,4 +8,8 @@ model = dict(
     auxiliary_head=dict(align_corners=True),
     pretrained='open-mmlab://resnet101_v1c',
     backbone=dict(depth=101))
+data = dict(
+    samples_per_gpu=1,
+    workers_per_gpu=1,
+    )
 test_cfg = dict(mode='slide', crop_size=(769, 769), stride=(513, 513))
