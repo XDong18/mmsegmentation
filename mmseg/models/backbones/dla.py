@@ -130,6 +130,7 @@ class Bottleneck(nn.Module):
         out = self.conv3(out)
         out = self.bn3(out)
 
+        print('pin1\n', out.shape, residual.shape)
         out += residual
         out = self.relu(out)
 
