@@ -1,2 +1,2 @@
-export CUDA_VISIBLE_DEVICES=2,3,4,5
-PORT=29502 ./tools/dist_train.sh configs/dla/dla34up_80k_new_sbn.py 4 --work-dir ./out/dla34up_80k_new_sbn/
+export CUDA_VISIBLE_DEVICES=0,1,2,3,6,7,8,9
+PORT=29502 ./tools/dist_train.sh configs/dla/dla102up_80k_new.py 8 --work-dir ./out/dla102up_80k_new_bs16/

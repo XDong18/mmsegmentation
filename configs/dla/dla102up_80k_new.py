@@ -36,17 +36,17 @@ test_pipeline = [
 
 data = dict(
     samples_per_gpu=2,
-    workers_per_gpu=4,
+    workers_per_gpu=2,
     train = dict(pipeline=train_pipeline),
     val = dict(pipeline=test_pipeline),
     test = dict(pipeline=test_pipeline))
 
 # TODO lr changed!!!
 optimizer = dict(
-            type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001)
+            type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 
 
-optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+optimizer_config = dict()
 
 lr_config = dict(policy='poly', power=0.9, min_lr=1e-4, by_epoch=False)
 runner = dict(type='IterBasedRunner', max_iters=80000)
