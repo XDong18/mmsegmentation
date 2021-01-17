@@ -2,7 +2,7 @@
 dataset_type = 'Bdd100kDataset'
 data_root = '/shared/xudongliu/bdd100k/seg/seg/'
 img_norm_cfg = dict(
-    mean=[0.2787 * 255, 0.2926 * 255, 0.2899 * 255], std=[0.2474 * 255, 0.2653 * 255, 0.2760 * 255], to_rgb=True)
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 crop_size = (769, 769) # TODO check it 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
