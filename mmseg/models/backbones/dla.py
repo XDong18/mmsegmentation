@@ -45,7 +45,7 @@ class BasicBlock(nn.Module):
             planes,
             planes,
             3,
-            stride=stride,
+            stride=1,
             padding=dilation,
             dilation=dilation,
             bias=False)
