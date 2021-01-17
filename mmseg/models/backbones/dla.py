@@ -181,6 +181,7 @@ class BottleneckX(nn.Module):
         out = self.conv3(out)
         out = self.bn3(out)
 
+        print('pin1\n', out.shape, residual.shape)
         out += residual
         out = self.relu(out)
 
@@ -308,6 +309,7 @@ class Tree(nn.Module):
         children = [] if children is None else children
         bottom = self.downsample(x) if self.downsample else x
         residual = self.project(bottom) if self.project else bottom
+        print('pin2\n', x.shape, residual.shape)
         if self.level_root:
             children.append(bottom)
         x1 = self.tree1(x, residual)
