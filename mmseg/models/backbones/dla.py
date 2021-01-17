@@ -87,9 +87,6 @@ class Bottleneck(nn.Module):
             inplanes,
             bottle_planes,
             1,
-            stride=stride,
-            padding=dilation,
-            dilation=dilation,
             bias=False)
         self.bn1 = build_norm_layer(norm_cfg, bottle_planes)[1]
         self.conv2 = build_conv_layer(
@@ -107,9 +104,6 @@ class Bottleneck(nn.Module):
             bottle_planes,
             planes,
             1,
-            stride=stride,
-            padding=dilation,
-            dilation=dilation,
             bias=False)
         self.bn3 = build_norm_layer(norm_cfg, planes)[1]
         self.relu = nn.ReLU(inplace=True)
@@ -130,7 +124,7 @@ class Bottleneck(nn.Module):
         out = self.conv3(out)
         out = self.bn3(out)
 
-        print('pin1\n', out.shape, residual.shape)
+        # print('pin1\n', out.shape, residual.shape)
         out += residual
         out = self.relu(out)
 
@@ -182,7 +176,7 @@ class BottleneckX(nn.Module):
         out = self.conv3(out)
         out = self.bn3(out)
 
-        print('pin1\n', out.shape, residual.shape)
+        # print('pin1\n', out.shape, residual.shape)
         out += residual
         out = self.relu(out)
 
@@ -310,7 +304,7 @@ class Tree(nn.Module):
         children = [] if children is None else children
         bottom = self.downsample(x) if self.downsample else x
         residual = self.project(bottom) if self.project else bottom
-        print('pin2\n', x.shape, residual.shape)
+        # print('pin2\n', x.shape, residual.shape)
         if self.level_root:
             children.append(bottom)
         x1 = self.tree1(x, residual)
