@@ -413,7 +413,7 @@ class DLA(nn.Module):
     def init_weights(self, pretrained=None):
         if isinstance(pretrained, str):
             logger = logging.getLogger()
-            load_checkpoint(self, pretrained, strict=True, logger=logger)
+            load_checkpoint(self, pretrained, strict=False, logger=logger)
         elif pretrained is None:
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):
