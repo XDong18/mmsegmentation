@@ -1,5 +1,5 @@
 # model settings
-norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
+norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
     type='EncoderDecoder',
     pretrained='/shared/xudongliu/models/dla102_27a30eac.pth',
@@ -8,11 +8,15 @@ model = dict(
         levels=[1, 1, 1, 3, 4, 1],
         channels=[16, 32, 128, 256, 512, 1024],
         block_num=1,
-        return_levels=True),
+        num_classes=19,
+        return_levels=True,
+        norm_cfg=norm_cfg
+        ),
     neck=dict(
         type='DLAUp',
         channels=[32, 128, 256, 512, 1024],
-        scales=(1, 2, 4, 8, 16)
+        scales=(1, 2, 4, 8, 16),
+        norm_cfg=norm_cfg
         ),
     decode_head=dict(
             type='DLAsHead',

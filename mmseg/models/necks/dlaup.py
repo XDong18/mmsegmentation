@@ -4,8 +4,11 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from ..builder import NECKS
-from ..model_utils import ConvModule
-from mmcv.cnn import xavier_init
+# from ..model_utils import ConvModule
+from mmcv.cnn import (build_conv_layer, build_norm_layer, build_plugin_layer,
+                      constant_init, kaiming_init)
+from mmcv.cnn import ConvModule, xavier_init
+from mmcv.utils.parrots_wrapper import _BatchNorm
 
 
 class Identity(nn.Module):
@@ -37,8 +40,7 @@ class IDAUp(nn.Module):
                  channels,
                  up_factors,
                  conv_cfg=None,
-                 norm_cfg=None,
-                 activation='relu'):
+                 norm_cfg=dict(type='BN', requires_grad=True)):
         super(IDAUp, self).__init__()
         self.channels = channels
         self.out_dim = out_dim
@@ -46,14 +48,16 @@ class IDAUp(nn.Module):
             if c == out_dim:
                 proj = Identity()
             else:
-                proj = ConvModule(
-                    c,
-                    out_dim,
-                    kernel_size=1,
-                    stride=1,
-                    conv_cfg=conv_cfg,
-                    norm_cfg=norm_cfg,
-                    activation=activation)
+                proj = nn.Sequential(
+                    build_conv_layer(
+                        conv_cfg,
+                        c,
+                        out_dim,
+                        1,
+                        stride=1,
+                        bias=False),
+                    build_norm_layer(norm_cfg, out_dim)[1],
+                    nn.ReLU(inplace=True))
 
             f = int(up_factors[i])
             if f == 1:
@@ -73,22 +77,25 @@ class IDAUp(nn.Module):
             setattr(self, 'up_' + str(i), up)
 
         for i in range(1, len(channels)):
-            node = ConvModule(
-                out_dim * 2,
-                out_dim,
-                kernel_size=node_kernel,
-                stride=1,
-                padding=node_kernel // 2,
-                conv_cfg=conv_cfg,
-                norm_cfg=norm_cfg,
-                activation=activation)
+            node = nn.Sequential(
+                build_conv_layer(
+                        conv_cfg,
+                        out_dim * 2,
+                        out_dim,
+                        node_kernel,
+                        stride=1,
+                        padding=node_kernel // 2,
+                        bias=False),
+                build_norm_layer(norm_cfg, out_dim)[1],
+                nn.ReLU(inplace=True))
             setattr(self, 'node_' + str(i), node)
 
         for m in self.modules():
-            classname = m.__class__.__name__
+            # classname = m.__class__.__name__
             if isinstance(m, nn.Conv2d):
-                m.weight.data.normal_(0, 0.02)
-            elif classname.find('BatchNorm') != -1:
+                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                m.weight.data.normal_(0, math.sqrt(2. / n))
+            elif isinstance(m, _BatchNorm):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
 
@@ -115,7 +122,8 @@ class DLAUp(nn.Module):
                  channels,
                  scales=(1, 2, 4, 8), # (1,2,4,8,16)
                  in_channels=None,
-                 activation='relu'):
+                 conv_cfg=None,
+                 norm_cfg=dict(type='BN', requires_grad=True)):
         super(DLAUp, self).__init__()
         if in_channels is None:
             in_channels = channels
@@ -126,8 +134,13 @@ class DLAUp(nn.Module):
             j = -i - 2
             setattr(
                 self, 'ida_{}'.format(i),
-                IDAUp(3, channels[j], in_channels[j:],
-                      scales[j:] // scales[j]))
+                IDAUp(
+                    3,
+                    channels[j],
+                    in_channels[j:],
+                    scales[j:] // scales[j],
+                    conv_cfg=conv_cfg,
+                    norm_cfg=norm_cfg))
             scales[j + 1:] = scales[j]
             in_channels[j + 1:] = [channels[j] for _ in channels[j + 1:]]
 

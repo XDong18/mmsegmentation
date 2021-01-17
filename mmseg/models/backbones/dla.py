@@ -3,47 +3,53 @@ import logging
 import torch
 from torch import nn
 
-from mmcv.cnn import constant_init, kaiming_init
 from mmcv.runner import load_checkpoint
 from ..builder import BACKBONES
+
+from mmcv.cnn import (build_conv_layer, build_norm_layer, build_plugin_layer,
+                      constant_init, kaiming_init)
+from mmcv.utils.parrots_wrapper import _BatchNorm
+
 
 BatchNorm = nn.BatchNorm2d
 
 # model parts >>>
 def conv3x3(in_planes, out_planes, stride=1):
     "3x3 convolution with padding"
-    return nn.Conv2d(
-        in_planes,
-        out_planes,
-        kernel_size=3,
-        stride=stride,
-        padding=1,
-        bias=False)
-
+    return build_conv_layer(None, in_planes, out_planes, 3, stride=stride, \
+                            padding=1, bias=False)
 
 class BasicBlock(nn.Module):
 
-    def __init__(self, inplanes, planes, stride=1, dilation=1):
+    def __init__(self,
+                inplanes,
+                planes,
+                stride=1,
+                dilation=1,
+                conv_cfg=None,
+                norm_cfg=dict(type='BN', requires_grad=True)):
         super(BasicBlock, self).__init__()
-        self.conv1 = nn.Conv2d(
+        self.conv1 = build_conv_layer(
+            conv_cfg,
             inplanes,
             planes,
-            kernel_size=3,
+            3,
             stride=stride,
             padding=dilation,
-            bias=False,
-            dilation=dilation)
-        self.bn1 = BatchNorm(planes)
+            dilation=dilation,
+            bias=False)
+        self.bn1 = build_norm_layer(norm_cfg, planes)[1] # TODO check postfix
         self.relu = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv2d(
+        self.conv2 = build_conv_layer(
+            conv_cfg,
             planes,
             planes,
-            kernel_size=3,
-            stride=1,
+            3,
+            stride=stride,
             padding=dilation,
-            bias=False,
-            dilation=dilation)
-        self.bn2 = BatchNorm(planes)
+            dilation=dilation,
+            bias=False)
+        self.bn2 = build_norm_layer(norm_cfg, planes)[1]
         self.stride = stride
 
     def forward(self, x, residual=None):
@@ -66,25 +72,46 @@ class BasicBlock(nn.Module):
 class Bottleneck(nn.Module):
     expansion = 2
 
-    def __init__(self, inplanes, planes, stride=1, dilation=1):
+    def __init__(self,
+                inplanes,
+                planes,
+                stride=1,
+                dilation=1,
+                conv_cfg=None,
+                norm_cfg=dict(type='BN', requires_grad=True)):
         super(Bottleneck, self).__init__()
         expansion = Bottleneck.expansion
         bottle_planes = planes // expansion
-        self.conv1 = nn.Conv2d(
-            inplanes, bottle_planes, kernel_size=1, bias=False)
-        self.bn1 = BatchNorm(bottle_planes)
-        self.conv2 = nn.Conv2d(
+        self.conv1 = build_conv_layer(
+            conv_cfg,
+            inplanes,
             bottle_planes,
-            bottle_planes,
-            kernel_size=3,
+            1,
             stride=stride,
             padding=dilation,
-            bias=False,
-            dilation=dilation)
-        self.bn2 = BatchNorm(bottle_planes)
-        self.conv3 = nn.Conv2d(
-            bottle_planes, planes, kernel_size=1, bias=False)
-        self.bn3 = BatchNorm(planes)
+            dilation=dilation,
+            bias=False)
+        self.bn1 = build_norm_layer(norm_cfg, bottle_planes)[1]
+        self.conv2 = build_conv_layer(
+            conv_cfg,
+            bottle_planes,
+            bottle_planes,
+            3,
+            stride=stride,
+            padding=dilation,
+            dilation=dilation,
+            bias=False)
+        self.bn2 = build_norm_layer(norm_cfg, bottle_planes)[1]
+        self.conv3 = build_conv_layer(
+            conv_cfg,
+            bottle_planes,
+            planes,
+            1,
+            stride=stride,
+            padding=dilation,
+            dilation=dilation,
+            bias=False)
+        self.bn3 = build_norm_layer(norm_cfg, planes)[1]
         self.relu = nn.ReLU(inplace=True)
         self.stride = stride
 
@@ -109,6 +136,7 @@ class Bottleneck(nn.Module):
         return out
 
 
+# TODO: not modified !!!!!!
 class BottleneckX(nn.Module):
     expansion = 2
     cardinality = 32
@@ -161,16 +189,23 @@ class BottleneckX(nn.Module):
 
 class Root(nn.Module):
 
-    def __init__(self, in_channels, out_channels, kernel_size, residual):
+    def __init__(self,
+                in_channels,
+                out_channels,
+                kernel_size,
+                residual,
+                conv_cfg=None,
+                norm_cfg=dict(type='BN', requires_grad=True)):
         super(Root, self).__init__()
-        self.conv = nn.Conv2d(
+        self.conv = build_conv_layer(
+            conv_cfg,
             in_channels,
             out_channels,
-            1,
+            kernel_size,
             stride=1,
-            bias=False,
-            padding=(kernel_size - 1) // 2)
-        self.bn = BatchNorm(out_channels)
+            padding=(kernel_size - 1) // 2,
+            bias=False)
+        self.bn = build_norm_layer(norm_cfg, out_channels)[1]
         self.relu = nn.ReLU(inplace=True)
         self.residual = residual
 
@@ -197,7 +232,9 @@ class Tree(nn.Module):
                  root_dim=0,
                  root_kernel_size=1,
                  dilation=1,
-                 root_residual=False):
+                 root_residual=False,
+                 conv_cfg=None,
+                 norm_cfg=dict(type='BN', requires_grad=True)):
         super(Tree, self).__init__()
         if root_dim == 0:
             root_dim = 2 * out_channels
@@ -205,9 +242,19 @@ class Tree(nn.Module):
             root_dim += in_channels
         if levels == 1:
             self.tree1 = block(
-                in_channels, out_channels, stride, dilation=dilation)
+                in_channels,
+                out_channels,
+                stride,
+                dilation=dilation,
+                conv_cfg=conv_cfg,
+                norm_cfg=norm_cfg)
             self.tree2 = block(
-                out_channels, out_channels, 1, dilation=dilation)
+                out_channels,
+                out_channels,
+                1,
+                dilation=dilation,
+                conv_cfg=conv_cfg,
+                norm_cfg=norm_cfg)
         else:
             self.tree1 = Tree(
                 levels - 1,
@@ -218,7 +265,9 @@ class Tree(nn.Module):
                 root_dim=0,
                 root_kernel_size=root_kernel_size,
                 dilation=dilation,
-                root_residual=root_residual)
+                root_residual=root_residual,
+                conv_cfg=conv_cfg,
+                norm_cfg=norm_cfg)
             self.tree2 = Tree(
                 levels - 1,
                 block,
@@ -227,10 +276,16 @@ class Tree(nn.Module):
                 root_dim=root_dim + out_channels,
                 root_kernel_size=root_kernel_size,
                 dilation=dilation,
-                root_residual=root_residual)
+                root_residual=root_residual,
+                conv_cfg=conv_cfg,
+                norm_cfg=norm_cfg)
         if levels == 1:
-            self.root = Root(root_dim, out_channels, root_kernel_size,
-                             root_residual)
+            self.root = Root(root_dim,
+            out_channels,
+            root_kernel_size,
+            root_residual,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg)
         self.level_root = level_root
         self.root_dim = root_dim
         self.downsample = None
@@ -240,12 +295,14 @@ class Tree(nn.Module):
             self.downsample = nn.MaxPool2d(stride, stride=stride)
         if in_channels != out_channels:
             self.project = nn.Sequential(
-                nn.Conv2d(
+                build_conv_layer(
+                    conv_cfg,
                     in_channels,
                     out_channels,
-                    kernel_size=1,
+                    1,
                     stride=1,
-                    bias=False), BatchNorm(out_channels))
+                    bias=False),
+                build_norm_layer(norm_cfg, out_channels)[1])
 
     def forward(self, x, residual=None, children=None):
         children = [] if children is None else children
@@ -276,7 +333,9 @@ class DLA(nn.Module):
                  return_levels=False,
                  pool_size=7,
                  linear_root=False,
-                 norm_eval=True):
+                 norm_eval=True,
+                 conv_cfg=None,
+                 norm_cfg=dict(type='BN', requires_grad=True)):
         super(DLA, self).__init__()
         if block_num == 1:
             block = Bottleneck
@@ -287,13 +346,29 @@ class DLA(nn.Module):
         self.return_levels = return_levels
         self.num_classes = num_classes
         self.base_layer = nn.Sequential(
-            nn.Conv2d(
-                3, channels[0], kernel_size=7, stride=1, padding=3,
-                bias=False), BatchNorm(channels[0]), nn.ReLU(inplace=True))
-        self.level0 = self._make_conv_level(channels[0], channels[0],
-                                            levels[0])
+            build_conv_layer(
+                    conv_cfg,
+                    3,
+                    channels[0],
+                    7,
+                    stride=1,
+                    padding=3,
+                    bias=False),
+            build_norm_layer(norm_cfg, channels[0])[1],
+            nn.ReLU(inplace=True))
+        self.level0 = self._make_conv_level(
+            channels[0],
+            channels[0],
+            levels[0],
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg)
         self.level1 = self._make_conv_level(
-            channels[0], channels[1], levels[1], stride=2)
+            channels[0],
+            channels[1],
+            levels[1],
+            stride=2,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg)
         self.level2 = Tree(
             levels[2],
             block,
@@ -301,7 +376,9 @@ class DLA(nn.Module):
             channels[2],
             2,
             level_root=False,
-            root_residual=residual_root)
+            root_residual=residual_root,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg)
         self.level3 = Tree(
             levels[3],
             block,
@@ -309,7 +386,9 @@ class DLA(nn.Module):
             channels[3],
             2,
             level_root=True,
-            root_residual=residual_root)
+            root_residual=residual_root,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg)
         self.level4 = Tree(
             levels[4],
             block,
@@ -317,7 +396,9 @@ class DLA(nn.Module):
             channels[4],
             2,
             level_root=True,
-            root_residual=residual_root)
+            root_residual=residual_root,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg)
         self.level5 = Tree(
             levels[5],
             block,
@@ -325,7 +406,9 @@ class DLA(nn.Module):
             channels[5],
             2,
             level_root=True,
-            root_residual=residual_root)
+            root_residual=residual_root,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg)
 
     def init_weights(self, pretrained=None):
         if isinstance(pretrained, str):
@@ -335,11 +418,12 @@ class DLA(nn.Module):
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):
                     kaiming_init(m)
-                elif isinstance(m, (nn.BatchNorm2d, nn.GroupNorm)):
+                elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
                     constant_init(m, 1)
         else:
             raise TypeError('pretrained must be a str or None')
-
+    
+    # TODO not modified !!!
     def _make_level(self, block, inplanes, planes, blocks, stride=1):
         downsample = None
         if stride != 1 or inplanes != planes:
@@ -357,19 +441,28 @@ class DLA(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def _make_conv_level(self, inplanes, planes, convs, stride=1, dilation=1):
+    def _make_conv_level(
+        self,
+        inplanes,
+        planes,
+        convs,
+        stride=1,
+        dilation=1,
+        conv_cfg=None,
+        norm_cfg=dict(type='BN', requires_grad=True)):
         modules = []
         for i in range(convs):
             modules.extend([
-                nn.Conv2d(
+                build_conv_layer(
+                    conv_cfg,
                     inplanes,
                     planes,
-                    kernel_size=3,
+                    3,
                     stride=stride if i == 0 else 1,
                     padding=dilation,
                     bias=False,
                     dilation=dilation),
-                BatchNorm(planes),
+                build_norm_layer(norm_cfg, planes)[1],
                 nn.ReLU(inplace=True)
             ])
             inplanes = planes
@@ -395,7 +488,7 @@ class DLA(nn.Module):
         if mode and self.norm_eval:
             for m in self.modules():
                 # trick: eval have effect on BatchNorm only
-                if isinstance(m, nn.BatchNorm2d):
+                if isinstance(m, _BatchNorm):
                     m.eval()
 # <<<
 
