@@ -49,7 +49,7 @@ test_pipeline = [
         ])
 ]
 
-
+test_cfg = dict(mode='slide', crop_size=(768, 768), stride=(512, 512))
 
 data = dict(
     samples_per_gpu=4,
