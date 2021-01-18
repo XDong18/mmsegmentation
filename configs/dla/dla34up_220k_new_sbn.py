@@ -1,5 +1,5 @@
 _base_ = [
-    '../_base_/models/dla102up.py',
+    '../_base_/models/dla34_new.py',
     '../_base_/datasets/bdd100k.py',
 ]
 
@@ -19,6 +19,20 @@ train_pipeline = [
     dict(type='Collect', keys=['img', 'gt_semantic_seg']),
 ]
 
+# test_pipeline = [
+#     dict(type='LoadImageFromFile'),
+#     dict(
+#         type='MultiScaleFlipAug',
+#         img_scale=(1280, 720), # necessary
+#         flip=False,
+#         transforms=[
+#             dict(type='RandomCrop', crop_size=crop_size),
+#             dict(type='Normalize', **img_norm_cfg),
+#             dict(type='Pad', size_divisor=32, pad_val=0, seg_pad_val=255),
+#             dict(type='ImageToTensor', keys=['img']),
+#             dict(type='Collect', keys=['img']),
+#         ])
+# ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
@@ -36,9 +50,11 @@ test_pipeline = [
         ])
 ]
 
+# test_cfg = dict(mode='slide', crop_size=(768, 768), stride=(512, 512))
+
 data = dict(
-    samples_per_gpu=2,
-    workers_per_gpu=2,
+    samples_per_gpu=4,
+    workers_per_gpu=4,
     train = dict(pipeline=train_pipeline),
     val = dict(pipeline=test_pipeline),
     test = dict(pipeline=test_pipeline))
@@ -51,7 +67,7 @@ optimizer = dict(
 optimizer_config = dict()
 
 lr_config = dict(policy='poly', power=0.9, min_lr=1e-4, by_epoch=False)
-runner = dict(type='IterBasedRunner', max_iters=80000)
+runner = dict(type='IterBasedRunner', max_iters=220000)
 checkpoint_config = dict(by_epoch=False, interval=2000)
 evaluation = dict(interval=2000, metric='mIoU')
 
