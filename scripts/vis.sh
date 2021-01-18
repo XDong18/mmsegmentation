@@ -1,2 +1,2 @@
-export CUDA_VISIBLE_DEVICES=8,9
-python tools/test.py configs/deeplabv3plus/deeplabv3plus_r50-d8_769x769_40k_torchvision_bdd100k.py /shared/xudongliu/code/f_server/mmsegmentation/out/deeplabv3plus_r50-d8_769x769_40k_torchvision/latest.pth --eval mIoU --show-dir show/deeplabv3plus_r50-d8_769x769_40k_torchvision
+export CUDA_VISIBLE_DEVICES=6,7,8,9
+python tools/test.py configs/dla/dla34up_80k_new_sbn.py /shared/xudongliu/code/f_server/mmsegmentation/out/dla34up_80k_new_sbn/latest.pth --eval mIoU --show-dir show/dla34up_80k_new_sbn
