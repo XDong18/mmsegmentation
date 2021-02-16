@@ -10,7 +10,7 @@ model = dict(
     auxiliary_head=dict(align_corners=True))
 
 data = dict(
-    samples_per_gpu=1,
-    workers_per_gpu=1
+    samples_per_gpu=2,
+    workers_per_gpu=2
 )
 test_cfg = dict(mode='slide', crop_size=(769, 769), stride=(513, 513))
