@@ -15,13 +15,20 @@ def gpu_info():
 def narrow_setup(interval=2):
     gpu_power, gpu_memory = gpu_info()
     i = 0
-    while gpu_memory > 1000 or gpu_power > 20:  # set waiting condition
+    ok_count = 0
+    while gpu_memory > 1000 or gpu_power > 20 or ok_count < 5:  # set waiting condition
         gpu_power, gpu_memory = gpu_info()
+        if gpu_memory <= 1000 and gpu_power <= 20:
+            ok_count += 1
+        else:
+            ok_count = 0
         i = i % 5
         symbol = 'monitoring: ' + '>' * i + ' ' * (10 - i - 1) + '|'
         gpu_power_str = 'gpu power:%d W |' % gpu_power
         gpu_memory_str = 'gpu memory:%d MiB |' % gpu_memory
-        sys.stdout.write('\r' + gpu_memory_str + ' ' + gpu_power_str + ' ' + symbol)
+        ok_count_str = 'ok count:%d | ' % ok_count
+        sys.stdout.write('\r' + gpu_memory_str + ' ' + gpu_power_str + ' ' + \
+            ok_count_str + ' ' + symbol)
         sys.stdout.flush()
         time.sleep(interval)
         i += 1
