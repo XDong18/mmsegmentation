@@ -18,7 +18,7 @@ def narrow_setup(interval=2):
     ok_count = 0
     while gpu_memory > 1000 or gpu_power > 40 or ok_count < 5:  # set waiting condition
         gpu_power, gpu_memory = gpu_info()
-        if gpu_memory <= 1000 and gpu_power <= 20:
+        if gpu_memory <= 1000 and gpu_power <= 40:
             ok_count += 1
         else:
             ok_count = 0
