@@ -1,2 +1,3 @@
-export CUDA_VISIBLE_DEVICES=6,7,8,9
-python tools/test.py configs/dla/dla102up_80k_new.py ./out/dla_model/dla102_bs8_500e_new_pretrained.pth --eval mIoU
+export CUDA_VISIBLE_DEVICES=4,5
+python tools/test.py configs/dla/dla102up_80k_new.py ./out/fcn_r101-d8_769x769_40k_bs16_bdd100k/latest.pth \
+--eval mIoU --show-dir ./show/fcn_r101-d8_769x769_40k_bs16_bdd100k
