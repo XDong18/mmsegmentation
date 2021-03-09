@@ -8,8 +8,8 @@ model = dict(
     pretrained='open-mmlab://resnet101_v1c',
     backbone=dict(depth=101))
 data = dict(
-    samples_per_gpu=2,
-    workers_per_gpu=1,
+    samples_per_gpu=3,
+    workers_per_gpu=3,
     )
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0005)
 test_cfg = dict(mode='slide', crop_size=(769, 769), stride=(513, 513))
