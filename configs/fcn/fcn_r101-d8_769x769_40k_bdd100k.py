@@ -10,8 +10,8 @@ model = dict(
     auxiliary_head=dict(align_corners=True))
 
 data = dict(
-    samples_per_gpu=6,
-    workers_per_gpu=6
+    samples_per_gpu=1,
+    workers_per_gpu=1
 )
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0005)
 test_cfg = dict(mode='slide', crop_size=(769, 769), stride=(513, 513))
