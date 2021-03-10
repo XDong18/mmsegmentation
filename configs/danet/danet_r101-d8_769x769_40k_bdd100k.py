@@ -9,7 +9,7 @@ model = dict(
     pretrained='open-mmlab://resnet101_v1c',
     backbone=dict(depth=101))
 data = dict(
-    samples_per_gpu=2,
+    samples_per_gpu=1,
     workers_per_gpu=1,
     )
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0005)
