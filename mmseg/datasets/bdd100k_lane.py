@@ -3,11 +3,11 @@ import random
 import mmcv
 import numpy as np
 from .custom import CustomDataset
-from mmcv.parallel import DataContainer as DC
+# from mmcv.parallel import DataContainer as DC
 # from pycocotools.bdd import BDD
-from .utils import to_tensor, random_scale, random_crop
-from .registry import DATASETS
-from .builder import build_dataset
+# from .utils import to_tensor, random_scale, random_crop
+from .builder import DATASETS
+from .custom import CustomDataset
 import os
 from PIL import Image
 import json
