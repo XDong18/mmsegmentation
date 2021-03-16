@@ -11,6 +11,6 @@ for fn in os.listdir(img_dir):
     if name not in label_names:
         cmd = 'mv ' + osp.join(img_dir, fn) + ' ' + temp_img_dir
         print('caught ', fn)
-        exit()
+        # exit()
     
 
