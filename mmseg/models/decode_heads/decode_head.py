@@ -224,11 +224,7 @@ class BaseDecodeHead(nn.Module, metaclass=ABCMeta):
         else:
             seg_weight = None
         seg_label = seg_label.squeeze(1)
-<<<<<<< HEAD
         # print('\npin', self.num_classes, seg_label.max(), 'pin\n')
-=======
-        print('\npin', self.num_classes, seg_label.max(), 'pin')
->>>>>>> 88de459bf11e23be606d941a845b58bb1d08383d
         loss['loss_seg'] = self.loss_decode(
             seg_logit,
             seg_label,

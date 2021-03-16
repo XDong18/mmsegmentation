@@ -7,6 +7,7 @@ from mmseg.ops import resize
 from .. import builder
 from ..builder import SEGMENTORS
 from .base import BaseSegmentor
+from mmcv.runner import get_dist_info
 
 
 @SEGMENTORS.register_module()
@@ -112,12 +113,19 @@ class Multi_head_EncoderDecoder(BaseSegmentor):
         loss_decode_dir = self.lane_dir_head.forward_train(x, img_metas,
                                                      gt_semantic_seg[:, :, :, 0],
                                                      self.train_cfg)
+
+        
         loss_decode_sty = self.lane_sty_head.forward_train(x, img_metas,
                                                      gt_semantic_seg[:, :, :, 1],
                                                      self.train_cfg)
         loss_decode_typ = self.lane_typ_head.forward_train(x, img_metas,
                                                      gt_semantic_seg[:, :, :, 2],
                                                      self.train_cfg)
+        rank, world_size = get_dist_info()
+        if rank == 0:
+            print('\npin 0', gt_semantic_seg[:, :, :, 0].max(), '\npin 0')
+            print('\npin 1', gt_semantic_seg[:, :, :, 1].max(), '\npin 0')
+            print('\npin 2', gt_semantic_seg[:, :, :, 2].max(), '\npin 0')
 
         losses.update(add_prefix(loss_decode_dir, 'decode_lane_dir'))
         losses.update(add_prefix(loss_decode_sty, 'decode_lane_sty'))
