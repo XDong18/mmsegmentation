@@ -25,16 +25,21 @@ def single_gpu_test(model, data_loader, show=False, out_dir=None):
     """
 
     model.eval()
-    results = []
+    results_0 = []
+    results_1 = []
+    results_2 = []
     dataset = data_loader.dataset
     prog_bar = mmcv.ProgressBar(len(dataset))
     for i, data in enumerate(data_loader):
         with torch.no_grad():
             result = model(return_loss=False, **data)
         if isinstance(result, list):
-            results.extend(result)
+            results_0.extend(result[0])
+            results_1.extend(result[1])
+            results_2.extend(result[2])
         else:
-            results.append(result)
+            # results.append(result)
+            pass
 
         if show or out_dir:
             img_tensor = data['img'][0]
@@ -50,21 +55,37 @@ def single_gpu_test(model, data_loader, show=False, out_dir=None):
                 img_show = mmcv.imresize(img_show, (ori_w, ori_h))
 
                 if out_dir:
-                    out_file = osp.join(out_dir, img_meta['ori_filename'])
+                    out_file_0 = osp.join(out_dir + '_dir', img_meta['ori_filename'])
+                    out_file_1 = osp.join(out_dir + '_sty', img_meta['ori_filename'])
+                    out_file_2 = osp.join(out_dir + '_type', img_meta['ori_filename'])
                 else:
-                    out_file = None
+                    out_file_0 = None
+                    out_file_1 = None
+                    out_file_2 = None
 
                 model.module.show_result(
                     img_show,
-                    result,
+                    result[0],
                     palette=dataset.PALETTE,
                     show=show,
-                    out_file=out_file)
+                    out_file=out_file_0)
+                model.module.show_result(
+                    img_show,
+                    result[1],
+                    palette=dataset.PALETTE,
+                    show=show,
+                    out_file=out_file_1)
+                model.module.show_result(
+                    img_show,
+                    result[2],
+                    palette=dataset.PALETTE,
+                    show=show,
+                    out_file=out_file_2)
 
         batch_size = data['img'][0].size(0)
         for _ in range(batch_size):
             prog_bar.update()
-    return results
+    return [results_0, results_1, results_2]
 
 
 def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
@@ -88,7 +109,9 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
     """
 
     model.eval()
-    results = []
+    results_0 = []
+    results_1 = []
+    results_2 = []
     dataset = data_loader.dataset
     rank, world_size = get_dist_info()
     if rank == 0:
@@ -97,9 +120,11 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
         with torch.no_grad():
             result = model(return_loss=False, rescale=True, **data)
         if isinstance(result, list):
-            results.extend(result)
+            results_0.extend(result[0])
+            results_1.extend(result[1])
+            results_2.extend(result[2])
         else:
-            results.append(result)
+            pass
 
         if rank == 0:
             batch_size = data['img'][0].size(0)
@@ -108,10 +133,16 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
 
     # collect results from all ranks
     if gpu_collect:
-        results = collect_results_gpu(results, len(dataset))
+        results_0 = collect_results_gpu(results_0, len(dataset))
+        results_1 = collect_results_gpu(results_1, len(dataset))
+        results_2 = collect_results_gpu(results_2, len(dataset))
     else:
-        results = collect_results_cpu(results, len(dataset), tmpdir)
-    return results
+        results_0 = collect_results_cpu(results_0, len(dataset), './temp_0')
+        results_1 = collect_results_cpu(results_1, len(dataset), './temp_1')
+        results_2 = collect_results_cpu(results_2, len(dataset), './temp_2')
+    
+    # A-->[A, ..]
+    return [results_0, results_1, results_2]
 
 
 def collect_results_cpu(result_part, size, tmpdir=None):
