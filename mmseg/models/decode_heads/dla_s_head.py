@@ -73,13 +73,13 @@ class DLAsHead(BaseDecodeHead):
         else:
             seg_weight = None
         seg_label = seg_label.squeeze(1)
-        class_weight = torch.FloatTensor([1] + [self.fg_weight] * (self.num_classes - 1)).to(seg_logit.device)
+        # class_weight = torch.FloatTensor([1] + [self.fg_weight] * (self.num_classes - 1)).to(seg_logit.device)
         # print('\npin', self.num_classes, seg_label.max(), 'pin\n')
         loss['loss_seg'] = self.loss_decode(
             seg_logit,
             seg_label,
             weight=seg_weight,
-            class_weight=class_weight,
+            # class_weight=class_weight,
             ignore_index=self.ignore_index)
         loss['acc_seg'] = accuracy(seg_logit, seg_label)
         return loss
