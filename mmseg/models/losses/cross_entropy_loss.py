@@ -136,7 +136,7 @@ class CrossEntropyLoss(nn.Module):
                  use_sigmoid=False,
                  use_mask=False,
                  reduction='mean',
-                 class_weight=None,
+                #  class_weight=None,
                  loss_weight=1.0,
                  ignore_index=255):
         super(CrossEntropyLoss, self).__init__()
@@ -145,7 +145,7 @@ class CrossEntropyLoss(nn.Module):
         self.use_mask = use_mask
         self.reduction = reduction
         self.loss_weight = loss_weight
-        self.class_weight = class_weight
+        # self.class_weight = class_weight
         # self.ignore_index = ignore_index
 
         if self.use_sigmoid:
@@ -174,7 +174,7 @@ class CrossEntropyLoss(nn.Module):
             cls_score,
             label,
             weight,
-            class_weight=class_weight,
+            # class_weight=class_weight,
             reduction=reduction,
             avg_factor=avg_factor,
             **kwargs)
