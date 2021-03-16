@@ -73,7 +73,7 @@ class Multi_head_EncoderDecoder(BaseSegmentor):
                 Defaults to None.
         """
 
-        super(EncoderDecoder, self).init_weights(pretrained)
+        super(Multi_head_EncoderDecoder, self).init_weights(pretrained)
         self.backbone.init_weights(pretrained=pretrained)
         self.lane_dir_head.init_weights()
         self.lane_sty_head.init_weights()
