@@ -41,7 +41,7 @@ class DLAsHead(BaseDecodeHead):
             up = -1 # TODO unimplemented
 
         self.up = up
-        self.softmax = nn.LogSoftmax(dim=1)
+        # self.softmax = nn.LogSoftmax(dim=1)
         # self.init_weights() # TODO other configs do not use this function explictly
 
     def init_weights(self):
@@ -54,5 +54,5 @@ class DLAsHead(BaseDecodeHead):
     def forward(self, inputs):
         x = self.cls_seg(inputs)
         y = self.up(x)
-        y = self.softmax(y)
+        # y = self.softmax(y)
         return y
