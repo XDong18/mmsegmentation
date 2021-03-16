@@ -19,38 +19,38 @@ model = dict(
         norm_cfg=norm_cfg
         ),
     lane_dir_head=dict(
-            type='MultiLabelFCNMaskHead',
-            num_convs=4,
-            in_channels=256,
-            conv_out_channels=256,
+            type='DLAsHead',
+            channels=32,
+            in_channels=32,
             num_classes=3,
-            name='lane_dir',
-            loss_mask=dict(
-                type='CrossEntropyLoss', ignore_index=255),
-            fg_weight=10,
-            upsample_method='bilinear'),
+            dropout_ratio=0,
+            loss_decode=dict(
+                     type='CrossEntropyLoss',
+                     use_sigmoid=False,
+                     ignore_index=255),
+            ),
         lane_sty_head=dict(
-            type='MultiLabelFCNMaskHead',
-            num_convs=4,
-            in_channels=256,
-            conv_out_channels=256,
+            type='DLAsHead',
+            channels=32,
+            in_channels=32,
             num_classes=3,
-            name='lane_sty',
-            loss_mask=dict(
-                type='CrossEntropyLoss', ignore_index=255),
-            fg_weight=10,
-            upsample_method='bilinear'),
+            dropout_ratio=0,
+            loss_decode=dict(
+                     type='CrossEntropyLoss',
+                     use_sigmoid=False,
+                     ignore_index=255),
+            ),
         lane_typ_head=dict(
-            type='MultiLabelFCNMaskHead',
-            num_convs=4,
-            in_channels=256,
-            conv_out_channels=256,
+            type='DLAsHead',
+            channels=32,
+            in_channels=32,
             num_classes=9,
-            name='lane_typ',
-            loss_mask=dict(
-                type='CrossEntropyLoss', ignore_index=255),
-            fg_weight=10,
-            upsample_method='bilinear')
+            dropout_ratio=0,
+            loss_decode=dict(
+                     type='CrossEntropyLoss',
+                     use_sigmoid=False,
+                     ignore_index=255),
+            )
     )
 # model training and testing settings
 train_cfg = dict()
