@@ -27,7 +27,7 @@ model = dict(
             loss_decode=dict(
                      type='CrossEntropyLoss',
                      use_sigmoid=False,
-                     ignore_index=255),
+                     ),
             ),
         lane_sty_head=dict(
             type='DLAsHead',
@@ -38,7 +38,7 @@ model = dict(
             loss_decode=dict(
                      type='CrossEntropyLoss',
                      use_sigmoid=False,
-                     ignore_index=255),
+                     ),
             ),
         lane_typ_head=dict(
             type='DLAsHead',
@@ -49,7 +49,7 @@ model = dict(
             loss_decode=dict(
                      type='CrossEntropyLoss',
                      use_sigmoid=False,
-                     ignore_index=255),
+                     ),
             )
     )
 # model training and testing settings
