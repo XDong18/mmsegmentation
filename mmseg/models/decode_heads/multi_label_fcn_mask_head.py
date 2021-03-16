@@ -1,6 +1,6 @@
 import mmcv
 import numpy as np
-import pycocotools.mask as mask_util
+# import pycocotools.mask as mask_util
 import torch
 import torch.nn as nn
 
@@ -11,8 +11,7 @@ from mmseg.core import mask_target
 
 # replace mmdet.core with mmcv.runner
 from mmcv.runner import auto_fp16, force_fp32
-
-
+# from .decode_head import BaseDecodeHead
 
 
 @HEADS.register_module
@@ -117,17 +116,17 @@ class MultiLabelFCNMaskHead(nn.Module):
         mask_pred = [l(x) for l in self.conv_logits]
         return mask_pred
 
-    def get_target(self, sampling_results, gt_masks, rcnn_train_cfg):
-        pos_proposals = [res.pos_bboxes for res in sampling_results]
-        pos_assigned_gt_inds = [
-            res.pos_assigned_gt_inds for res in sampling_results
-        ]
-        mask_targets = mask_target(pos_proposals, pos_assigned_gt_inds,
-                                   gt_masks, rcnn_train_cfg)
-        return mask_targets
+    # def get_target(self, sampling_results, gt_masks, rcnn_train_cfg):
+    #     pos_proposals = [res.pos_bboxes for res in sampling_results]
+    #     pos_assigned_gt_inds = [
+    #         res.pos_assigned_gt_inds for res in sampling_results
+    #     ]
+    #     mask_targets = mask_target(pos_proposals, pos_assigned_gt_inds,
+    #                                gt_masks, rcnn_train_cfg)
+    #     return mask_targets
 
     @force_fp32(apply_to=('mask_pred', ))
-    def loss(self, mask_pred, mask_targets):
+    def losses(self, mask_pred, mask_targets):
         loss = dict()
         for i, (p, t, c) in enumerate(zip(mask_pred, mask_targets, self.num_classes)):
             if len(t) == 0:
@@ -140,3 +139,42 @@ class MultiLabelFCNMaskHead(nn.Module):
             loss_mask = self.loss_mask(p, t, class_weight=weights, ignore_index=self.ignore_index)
             loss['loss_{}'.format(self.name)] = loss_mask
         return loss
+    
+    def forward_train(self, inputs, img_metas, gt_semantic_seg, train_cfg):
+        """Forward function for training.
+        Args:
+            inputs (list[Tensor]): List of multi-level img features.
+            img_metas (list[dict]): List of image info dict where each dict
+                has: 'img_shape', 'scale_factor', 'flip', and may also contain
+                'filename', 'ori_shape', 'pad_shape', and 'img_norm_cfg'.
+                For details on the values of these keys see
+                `mmseg/datasets/pipelines/formatting.py:Collect`.
+            gt_semantic_seg (Tensor): Semantic segmentation masks
+                used if the architecture supports semantic segmentation task.
+            train_cfg (dict): The training config.
+
+        Returns:
+            dict[str, Tensor]: a dictionary of loss components
+        """
+        seg_logits = self.forward(inputs)
+        losses = self.losses(seg_logits, gt_semantic_seg)
+        return losses
+    
+    def forward_test(self, inputs, img_metas, test_cfg):
+        """Forward function for testing.
+
+        Args:
+            inputs (list[Tensor]): List of multi-level img features.
+            img_metas (list[dict]): List of image info dict where each dict
+                has: 'img_shape', 'scale_factor', 'flip', and may also contain
+                'filename', 'ori_shape', 'pad_shape', and 'img_norm_cfg'.
+                For details on the values of these keys see
+                `mmseg/datasets/pipelines/formatting.py:Collect`.
+            test_cfg (dict): The testing config.
+
+        Returns:
+            Tensor: Output segmentation map.
+        """
+        return self.forward(inputs)
+
+    
