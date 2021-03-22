@@ -52,7 +52,7 @@ model = dict(
                      type='CrossEntropyLoss',
                      class_weight=[1.,10.,10.,10.,10.,10.,10.,10.,10.],
                      use_sigmoid=False,
-                     class_weight=[1.,10.,10.,10.,10.,10.,10.,10.,10.],
+                    #  class_weight=[1.,10.,10.,10.,10.,10.,10.,10.,10.],
                      ),
             )
     )
