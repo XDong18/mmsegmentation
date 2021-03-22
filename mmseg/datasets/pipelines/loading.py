@@ -143,6 +143,10 @@ class LoadAnnotations(object):
             gt_semantic_seg = gt_semantic_seg - 1
             gt_semantic_seg[gt_semantic_seg == 254] = 255
         results['gt_semantic_seg'] = gt_semantic_seg
+        rank, world_size = get_dist_info()
+        if rank == 0:
+            print('\nanno_load',gt_semantic_seg.shape, gt_semantic_seg[:,:,0].max(),
+         gt_semantic_seg[:,:,1].max(), gt_semantic_seg[:,:,2].max(), 'anno_load\n')
         results['seg_fields'].append('gt_semantic_seg')
         return results
 

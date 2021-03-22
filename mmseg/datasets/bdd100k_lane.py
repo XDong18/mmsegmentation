@@ -61,6 +61,9 @@ class Bdd100k_LaneDataset(CustomDataset):
             gt_seg_maps_0.append(gt_seg_map[:,:,0])
             gt_seg_maps_1.append(gt_seg_map[:,:,1])
             gt_seg_maps_2.append(gt_seg_map[:,:,2])
+            rank, world_size = get_dist_info()
+            if rank == 0:
+                print('\ndataset', gt_seg_map[:,:,0].max(), gt_seg_map[:,:,1].max(), gt_seg_map[:,:,2].max(),'\ndataset')
 
         return gt_seg_maps_0, gt_seg_maps_1, gt_seg_maps_2
     
