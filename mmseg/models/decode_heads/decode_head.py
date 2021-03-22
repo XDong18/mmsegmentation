@@ -214,9 +214,11 @@ class BaseDecodeHead(nn.Module, metaclass=ABCMeta):
     def losses(self, seg_logit, seg_label):
         """Compute segmentation loss."""
         loss = dict()
+       # print('loss_pin',
+        #        seg_label.size())
         seg_logit = resize(
             input=seg_logit,
-            size=seg_label.shape[2:],
+            size=seg_label.shape[1:],
             mode='bilinear',
             align_corners=self.align_corners)
         if self.sampler is not None:
@@ -227,7 +229,7 @@ class BaseDecodeHead(nn.Module, metaclass=ABCMeta):
         # print('\npin', self.num_classes, seg_label.max(), 'pin\n')
         loss['loss_seg'] = self.loss_decode(
             seg_logit,
-            seg_label,
+            seg_label.long(),
             weight=seg_weight,
             ignore_index=self.ignore_index)
         loss['acc_seg'] = accuracy(seg_logit, seg_label)
