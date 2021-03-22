@@ -27,6 +27,7 @@ model = dict(
             loss_decode=dict(
                      type='CrossEntropyLoss',
                      use_sigmoid=False,
+                     class_weight=[1.,10.,10.],
                      ),
             ),
         lane_sty_head=dict(
@@ -38,6 +39,7 @@ model = dict(
             loss_decode=dict(
                      type='CrossEntropyLoss',
                      use_sigmoid=False,
+                     class_weight=[1.,10.,10.],
                      ),
             ),
         lane_typ_head=dict(
@@ -48,6 +50,7 @@ model = dict(
             dropout_ratio=0,
             loss_decode=dict(
                      type='CrossEntropyLoss',
+                     class_weight=[1.,10.,10.,10.,10.,10.,10.,10.,10.],
                      use_sigmoid=False,
                      ),
             )

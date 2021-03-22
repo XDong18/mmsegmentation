@@ -111,7 +111,7 @@ class Multi_head_EncoderDecoder(BaseSegmentor):
         training."""
         losses = dict()
         loss_decode_dir = self.lane_dir_head.forward_train(x, img_metas,
-                                                     gt_semantic_seg[:, :, :, 0],
+                                                     gt_semantic_seg[:, :, :, 2],
                                                      self.train_cfg)
 
         
@@ -119,10 +119,11 @@ class Multi_head_EncoderDecoder(BaseSegmentor):
                                                      gt_semantic_seg[:, :, :, 1],
                                                      self.train_cfg)
         loss_decode_typ = self.lane_typ_head.forward_train(x, img_metas,
-                                                     gt_semantic_seg[:, :, :, 2],
+                                                     gt_semantic_seg[:, :, :, 0],
                                                      self.train_cfg)
         rank, world_size = get_dist_info()
-        if rank == 0:
+        if rank == 10:
+            print('pin_size', gt_semantic_seg.size(), 'pin_size')
             print('\npin 0', gt_semantic_seg[:, :, :, 0].max(), '\npin 0')
             print('\npin 1', gt_semantic_seg[:, :, :, 1].max(), '\npin 0')
             print('\npin 2', gt_semantic_seg[:, :, :, 2].max(), '\npin 0')
