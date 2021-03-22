@@ -2,14 +2,8 @@
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0005)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
-lr_config = dict(
-            policy='step',
-            warmup='exp',
-            warmup_iters=500,
-            warmup_ratio=0.1 / 3,
-            step=[8, 11])
+lr_config = dict(policy='poly', power=0.9, min_lr=1e-4, by_epoch=False)
 # runtime settings
-runner = dict(type='EpochBasedRunner', max_epochs=12)
-total_epochs = 12
-checkpoint_config = dict(interval=1)
-evaluation = dict(interval=2000, metric='mIoU')
+runner = dict(type='IterBasedRunner', max_epochs=103824)
+checkpoint_config = dict(by_epoch=False, interval=2000)
+evaluation = dict(interval=100, metric='mIoU')
