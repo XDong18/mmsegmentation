@@ -10,6 +10,7 @@ from mmseg.core import mean_iou
 from mmseg.utils import get_root_logger
 from .builder import DATASETS
 from .pipelines import Compose
+from mmcv.runner import get_dist_info
 
 
 @DATASETS.register_module()
@@ -204,6 +205,17 @@ class CustomDataset(Dataset):
         ann_info = self.get_ann_info(idx)
         results = dict(img_info=img_info, ann_info=ann_info)
         self.pre_pipeline(results)
+        #results = self.pipeline(results)
+        rank, world_size = get_dist_info()
+        if rank==100:
+            gt = results['gt_semantic_seg']
+            gt[gt==255]=-1
+            print('pin1',
+                    gt.size(),
+                    gt[:,:,0].max(),
+                    gt[:,:,1].max(),
+                    gt[:,:,2].max(),
+                    'pin1')
         return self.pipeline(results)
 
     def prepare_test_img(self, idx):

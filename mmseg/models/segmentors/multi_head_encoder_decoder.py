@@ -106,23 +106,34 @@ class Multi_head_EncoderDecoder(BaseSegmentor):
         #TODO fix.output A-->[A, ...]
         return outs
 
-    def _decode_head_forward_train(self, x, img_metas, gt_semantic_seg):
+    def _decode_head_forward_train(self, x, img_metas, gt_semantic_seg_0, gt_semantic_seg_1, gt_semantic_seg_2):
         """Run forward function and calculate loss for decode head in
         training."""
         losses = dict()
+        # class check
+
+        #temp_gt = gt_semantic_seg
+        #temp_gt[temp_gt==255]=-1
+
+        rank, world_size = get_dist_info()
+        if rank==100:
+            print(gt_semantic_seg_2.max(),
+                gt_semantic_seg_1.max(),
+                    gt_semantic_seg_0.max())
         loss_decode_dir = self.lane_dir_head.forward_train(x, img_metas,
-                                                     gt_semantic_seg[:, :, :, 0],
+                                                     gt_semantic_seg_2,
                                                      self.train_cfg)
 
         
         loss_decode_sty = self.lane_sty_head.forward_train(x, img_metas,
-                                                     gt_semantic_seg[:, :, :, 1],
+                                                     gt_semantic_seg_1,
                                                      self.train_cfg)
         loss_decode_typ = self.lane_typ_head.forward_train(x, img_metas,
-                                                     gt_semantic_seg[:, :, :, 2],
+                                                     gt_semantic_seg_0,
                                                      self.train_cfg)
         rank, world_size = get_dist_info()
-        if rank == 0:
+        if rank == 10:
+            print('pin_size', gt_semantic_seg.size(), 'pin_size')
             print('\npin 0', gt_semantic_seg[:, :, :, 0].max(), '\npin 0')
             print('\npin 1', gt_semantic_seg[:, :, :, 1].max(), '\npin 0')
             print('\npin 2', gt_semantic_seg[:, :, :, 2].max(), '\npin 0')
@@ -166,7 +177,7 @@ class Multi_head_EncoderDecoder(BaseSegmentor):
         # A--> [A, ..]
         return seg_logits
 
-    def forward_train(self, img, img_metas, gt_semantic_seg):
+    def forward_train(self, img, img_metas, gt_semantic_seg_0, gt_semantic_seg_1, gt_semantic_seg_2):
         """Forward function for training.
 
         Args:
@@ -188,7 +199,7 @@ class Multi_head_EncoderDecoder(BaseSegmentor):
         losses = dict()
 
         loss_decode = self._decode_head_forward_train(x, img_metas,
-                                                      gt_semantic_seg)
+                                                      gt_semantic_seg_0, gt_semantic_seg_1, gt_semantic_seg_2)
         losses.update(loss_decode)
 
         if self.with_auxiliary_head:

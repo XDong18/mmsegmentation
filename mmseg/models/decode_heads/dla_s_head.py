@@ -59,27 +59,27 @@ class DLAsHead(BaseDecodeHead):
         # y = self.softmax(y)
         return y
     
-    @force_fp32(apply_to=('seg_logit', ))
-    def losses(self, seg_logit, seg_label):
-        """Compute segmentation loss."""
-        loss = dict()
-        seg_logit = resize(
-            input=seg_logit,
-            size=seg_label.shape[2:],
-            mode='bilinear',
-            align_corners=self.align_corners)
-        if self.sampler is not None:
-            seg_weight = self.sampler.sample(seg_logit, seg_label)
-        else:
-            seg_weight = None
-        seg_label = seg_label.squeeze(1)
-        # class_weight = torch.FloatTensor([1] + [self.fg_weight] * (self.num_classes - 1)).to(seg_logit.device)
+ #   @force_fp32(apply_to=('seg_logit', ))
+  #  def losses(self, seg_logit, seg_label):
+  #v      """Compute segmentation loss."""
+        #vloss = dict()
+       # seg_logit = resize(
+           # input=seg_logit,
+          #  size=seg_label.shape[2:],
+         #   mode='bilinear',
+        #    align_corners=self.align_corners)
+       # if self.sampler is not None:
+       #     seg_weight = self.sampler.sample(seg_logit, seg_label)
+       # else:
+        #    seg_weight = None
+       # seg_label = seg_label.squeeze(1)
+#        class_weight = torch.FloatTensor([1] + [self.fg_weight] * (self.num_classes - 1)).to(seg_logit.device)
         # print('\npin', self.num_classes, seg_label.max(), 'pin\n')
-        loss['loss_seg'] = self.loss_decode(
-            seg_logit,
-            seg_label,
-            weight=seg_weight,
-            # class_weight=class_weight,
-            ignore_index=self.ignore_index)
-        loss['acc_seg'] = accuracy(seg_logit, seg_label)
-        return loss
+       # loss['loss_seg'] = self.loss_decode(
+       #     seg_logit,
+      #      seg_label,
+     #       weight=seg_weight,
+ #           class_weight=class_weight,
+    #        ignore_index=self.ignore_index)
+   #     loss['acc_seg'] = accuracy(seg_logit, seg_label)
+  #      return loss
