@@ -152,7 +152,7 @@ class CustomDataset(Dataset):
                 img_infos.append(img_info)
 
         print_log(f'Loaded {len(img_infos)} images', logger=get_root_logger())
-        return img_infos
+        return img_infos[:100]
 
     def get_ann_info(self, idx):
         """Get annotation by index.

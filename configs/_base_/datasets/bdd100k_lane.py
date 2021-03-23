@@ -53,6 +53,6 @@ data = dict(
         type=dataset_type,
         data_root=data_root,
         img_dir='100k/val/',
-        ann_dir=None,
+        ann_dir='labels/lane/lane_val/',
         split=None,
         pipeline=test_pipeline))
