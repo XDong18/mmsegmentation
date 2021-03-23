@@ -1,9 +1,9 @@
 import os
 import os.path as osp
 
-img_dir = '/shared/xudongliu/bdd100k/100k/train'
-label_dir = '/shared/xudongliu/bdd100k/labels/lane/lane_train'
-temp_img_dir  = '/shared/xudongliu/bdd100k/100k/train_else/'
+img_dir = '/shared/xudongliu/bdd100k/100k/val'
+label_dir = '/shared/xudongliu/bdd100k/labels/lane/lane_val'
+temp_img_dir  = '/shared/xudongliu/bdd100k/100k/val_else/'
 label_names = os.listdir(label_dir)
 num  = 0
 for fn in os.listdir(img_dir):
